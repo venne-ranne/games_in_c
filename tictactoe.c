@@ -1,44 +1,44 @@
 #include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include "tictactoe.h"
+#include "guessgame.h"
 #define WIN_PIECES 3    /* the number of 'X' or 'O' in a row for win */
 
-int tictaetoe_game();
-void draw(const int size, char field[][size]);
-void drawBorder_line(const int size);
-int is_solved(const int size, char field[][size]);
-int is_game_over(const int size, char field[][size]);
-int add_cross(const int size, char field[][size], const int x, const int y, const char player);
-int is_row_contains(const int size, char field[][size]);
-int is_col_contains(const int size, char field[][size]);
-int is_diagonal_contains(const int size, char field[][size], int pos_x, int pos_y);
-int is_anti_diagonal_contains(const int size, char field[][size], int pos_x, int pos_y);
-
 int tictaetoe_game(){
-    int size = -1, pos_x = -1, pos_y = -1;
+    int size = -1, cont_game, pos_x, pos_y;
+    char input[10];  /* read the user input */
     char player = 'A';
-	
+			pos_x = -1, pos_y = -1;
     printf("Enter the size of field (only range from 3-10): ");
     scanf("%d", &size);
-	
     // only size between 3 and 10 is accepted
     while (size < 3 || size > 10){
         printf("Only enter a number between 3 and 10: ");
         scanf("%d", &size);
     }
+    getchar();
 	
     // create the 2D board based on the given size
     // initialise the board with SPACEs
     char board[size][size];
-    for (int i = 0; i < size; i++){
-        for (int j =0; j < size; j++){
-            board[i][j] = ' ';
-        }
-    }
-    draw(size, board); // draw the 2D board
+    reset_board(size, board);
 	
     // continue if the game is not solved yet and still have empty spaces
     while (is_solved(size, board) != 1 && is_game_over(size, board) != 1){
-        printf("Player %c (COL ROW): ", player);
-        scanf("%d %d", &pos_x, &pos_y);
+        printf("Player %c [COL ROW or Q to quit]: ", player);
+        
+        // read the user input
+        cont_game = get_position(player, input);
+        if (cont_game == 0){
+	  ask_save_game(size, board);
+          return 0;		
+        } else{
+            pos_x = input[0] - '0';
+            pos_y = input[2] - '0';
+        }
 
         // only redraw the board if it is successfully added
         if (add_cross(size, board, pos_x, pos_y, player) == 1){
@@ -48,13 +48,41 @@ int tictaetoe_game(){
         // check if the added cross win the game or not
         if (is_solved(size, board) == 1){
             printf("Player %c won!\n", player);
-            return 0;
+            cont_game = restartGame();
+            if (cont_game == 1){
+                reset_board(size, board);
+                player = 'B';
+            } else return 0;
         }
         player = player != 'A' ? 'A' : 'B';     // change player for next round
     }
+
     draw(size, board);
     printf("Game Over!!! It's a draw.\n");
     return 0;
+}
+
+void reset_board(const int size, char field[][size]){
+    for (int i = 0; i < size; i++){
+        for (int j =0; j < size; j++){
+            field[i][j] = ' ';
+        }
+    }
+    draw(size, field); // draw the 2D board
+}
+
+int get_position(const char player, char input[]){
+    while (1 == 1){
+        fgets(input, 10, stdin);
+        if (strlen(input) == 2 && (input[0] == 'Q' || input[0] == 'q')){
+            return 0;
+        } else if (strlen(input) > 4 || strlen(input) < 4 || isalpha(input[0])){
+            printf("Invalid input. Enter the column and row only.\n");
+            printf("Player %c [COL ROW or Q to quit]: ", player);
+        } else {
+            return 1;
+        }
+    }
 }
 
 /*
@@ -322,4 +350,59 @@ int is_anti_diagonal_contains(const int size, char field[][size], int pos_x, int
     }
     return 0;
 	
+}
+
+/**
+ * Ask if the user want to save the current game or not before quitting the game.
+ * @param game reference to the game object
+ */
+void ask_save_game(const int size, char field[][size]){
+    char input[10];
+    printf("Do you want to save game [Y/N]: ");
+	
+    while(1 == 1){
+        fgets(input, 10, stdin);
+        if (strlen(input) > 2){
+            printf("Player (Y or N key only): ");
+        } else if (input[0] == 'Y' || input[0] == 'y'){
+            FILE *fp;
+            fp = fopen("tictactoe_game.txt", "w");
+            if (save_tictactoe_game(size, field, fp)){
+                printf("Game saved under \"tictactoe_game.txt.\"\n");
+            }
+            return;
+        } else if (input[0] == 'N' || input[0] == 'n'){
+            return;
+        } else {
+            printf("Player (Y or N key only): ");
+        }
+    }
+}
+
+bool save_tictactoe_game(const int size, char field[][size], FILE *file){
+    int row, col, i;
+    char *str;
+	
+    str = (char *) malloc(24);
+	
+    if (file == NULL){
+        printf("Saving error!");
+        return false;
+    }
+    
+    // saved the current board as string
+    for (row = 0, i = 0; row < size; row++){
+        for(col = 0; col < size; col++){
+            str[i++] = (field[row][col] == ' ') ? 'T':field[row][col];
+        }
+    }
+	
+    str[i] = '\0'; /* to terminate string properly */
+    
+    // save the string of the game state and score
+    fprintf(file,"%s", str);
+    free(str);
+    fclose(file);
+    return true;
+
 }

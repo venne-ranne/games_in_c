@@ -78,7 +78,7 @@ bool is_game_won(const struct game game){
 
 
 bool update_on_x(struct game *game, int start_x, int end_x){
-    int row, col, i;
+    int row, col, i, j, score;
     char tile, next_tile;
     bool is_updated, is_shifted;
 
@@ -99,7 +99,12 @@ bool update_on_x(struct game *game, int start_x, int end_x){
             if (tile == next_tile){
                 game->board[row][col] = game->board[row][col]+1;
                 game->board[row][col+i] = ' '; // replaced the merged tile with SPACE
-               // game->score += (int)(pow(2.0, tile-64.0)*2); // update the current score
+                // game->score += (int)(pow(2.0, tile-64.0)*2); // update the current score
+                score = 2;
+                for (j = 1; j < tile-64; j++){
+                    score = score * 2;
+		}
+                game->score += score;
                 shift_tiles_on_x(game, start_x, end_x+i, row);
                 is_updated = true;
             }
@@ -110,13 +115,14 @@ bool update_on_x(struct game *game, int start_x, int end_x){
 }
 
 bool update_on_y(struct game *game, int start_y, int end_y){
-    int row, col, i;
+    int row, col, i, j, score;
     char tile, next_tile;
     bool is_updated, is_shifted;
 	
     i = start_y == 0 ? 1:-1;
     is_updated = false,
     is_shifted = false;
+    j = 0;
 	
     for (col = 0; col != SIZE; col++){
         is_shifted = (shift_tiles_on_y(game, start_y, end_y+i, col) || is_shifted) ? true: false;
@@ -131,7 +137,12 @@ bool update_on_y(struct game *game, int start_y, int end_y){
             if (tile == next_tile){
                 game->board[row][col] = game->board[row][col]+1;
                 game->board[row+i][col] = ' '; // replaced the merged tile with SPACE
+                score = 2;
+                for (j = 1; j < tile-64; j++){
+                    score = score * 2;
+		}
                 //game->score += (int)(pow(2.0, tile-64.0)*2); // update the current score
+                game->score += score;
                 shift_tiles_on_y(game, start_y, end_y+i, col);
                 is_updated = true;
             }

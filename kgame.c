@@ -11,16 +11,20 @@ char input[INPUT_SIZE]; /* read the user input */
 int start_k_game(){
     struct game game;
     struct game *pgame = &game;
-    int row, col, slide_dir;
+    int slide_dir, row, col;
     bool add_new_tile, has_updated;
+
+	// initialise the score & the board with SPACEs
+	for (row = 0; row < SIZE; row++){
+		for(col = 0; col < SIZE; col++){
+			game.board[row][col] = ' ';
+		}
+	}
+	game.score = 0;
 	
-    // initialise the score & the board with SPACEs
-    for (row = 0; row < SIZE; row++){
-        for(col = 0; col < SIZE; col++){
-            game.board[row][col] = ' ';
-        }
-    }
-    game.score = 0;
+	  printf("\n***************** WELCOME TO K-GAME *****************\n");
+		printf("Instruction: Use WASD keys to slide.\n");
+	
     add_new_tile = start_new_game(pgame);
     has_updated = true;
 	
@@ -36,7 +40,9 @@ int start_k_game(){
 		
 	// get the slide direction from stdin	
         slide_dir = direction_to_slide();
-        if (slide_dir == 1 || slide_dir == 2){
+        if(slide_dir == 5){
+					return 0;
+        } else if (slide_dir == 1 || slide_dir == 2){
             has_updated = update(pgame, slide_dir == 1 ? -1:1, 0);
         } else {
             has_updated = update(pgame, 0, slide_dir == 3 ? -1:1);
@@ -47,7 +53,8 @@ int start_k_game(){
         if (is_game_won(game) && has_updated){
             render(game);
             printf("Congratulation! You won!\n");
-            return 0;
+            reset_game_board(pgame);
+            start_new_game(pgame);
         }
         add_new_tile = true;
     }
@@ -55,6 +62,17 @@ int start_k_game(){
     render(game);
     printf("You run out of moves. Game over!\n");
     return 0;
+}
+
+void reset_game_board(struct game *game){
+	 int row, col;
+    // initialise the score & the board with SPACEs
+    for (row = 0; row < SIZE; row++){
+        for(col = 0; col < SIZE; col++){
+            game->board[row][col] = ' ';
+        }
+    }
+    game->score = 0;
 }
 
 
@@ -65,11 +83,9 @@ int start_k_game(){
  * @return true, if a new game is start, otherwise false.
  */
 bool start_new_game(struct game *game){
-    printf("\n***************** WELCOME TO K-GAME *****************\n");
-    printf("Instruction: Use WASD keys to slide.\n");
     printf("To start a new game, press ENTER key.\n");
     printf("To continue a saved game, press 'C' key.\n");
-    printf("Command [ENTER/C]: ");	
+    printf("Command [ENTER/C]: ");
     fgets(input, INPUT_SIZE, stdin);
 	
     while(1 == 1){
@@ -80,7 +96,7 @@ bool start_new_game(struct game *game){
             FILE *fp;
             fp = fopen("saved_game.txt", "r");
             return read_saved_game(game, fp);
-        } else {
+				} else {
             printf("Command [ENTER/C key only]: " );
             fgets(input, INPUT_SIZE, stdin);	
         }
@@ -117,6 +133,7 @@ int direction_to_slide(const struct game game){
                 return 4;
             } else if (input[0] == 'Q' || input[0] == 'q'){
                 save_game_before_quit(game);
+                return 5;
             } else {
                 printf("Player (WASD or Q key only): " );
                 fgets(input, INPUT_SIZE, stdin);
@@ -139,13 +156,13 @@ void save_game_before_quit(const struct game game){
             fgets(input, INPUT_SIZE, stdin);
         } else if (input[0] == 'Y' || input[0] == 'y'){
             FILE *fp;
-            fp = fopen("saved_game.txt", "w");
+            fp = fopen("kgame.txt", "w");
             if (save_game(game, fp)){
-                printf("Game saved under \"saved_game.txt.\"\n");
+                printf("Game saved under \"kgame.txt.\"\n");
             }
-            exit(0);
+            return;
         } else if (input[0] == 'N' || input[0] == 'n'){
-            exit(0);
+            return;
         } else {
             printf("Player (Y or N key only): ");
             fgets(input, INPUT_SIZE, stdin);

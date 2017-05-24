@@ -138,6 +138,7 @@ bool save_game(const struct game game, FILE *file);
 bool read_saved_game(struct game *game, FILE *file);
 
 int start_k_game();
+void reset_game_board(struct game *game);
 bool start_new_game(struct game *game);
 int direction_to_slide();
 void save_game_before_quit(const struct game game);
