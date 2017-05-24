@@ -12,10 +12,12 @@ int main(){
      int cont_main_menu, selection;
 	
      printf("\n----------Welcome to Games in C----------\n");
+     printf("Let’s play a game in C! We have a selection of games: \n");
+     printf("Guess My Number, Tic Tac Toe and K-Game games.\n");
      printf("Instruction: To quit any game, press 'Q' key. \n");
      printf("Choose one of the following options: \n");
 	
-     cont_main_menu = 1;
+     cont_main_menu = 1;    // represents if the program still running or not
 	
      while (cont_main_menu == 1){
           printf("----------------Main Menu----------------\n");
@@ -41,7 +43,7 @@ int main(){
 void display_game_menu(){
      int cont_game_menu, selection;
 	
-     cont_game_menu = 1;
+     cont_game_menu = 1;    // represents if the user still on game menu or not
 	
      while (cont_game_menu == 1){
           printf("----------------Game Menu----------------\n");

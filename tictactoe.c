@@ -62,6 +62,11 @@ int tictaetoe_game(){
     return 0;
 }
 
+/*
+ * Function: reset_board
+ * ----------------------------
+ * Reset the board with SPACEs.
+ */
 void reset_board(const int size, char field[][size]){
     for (int i = 0; i < size; i++){
         for (int j =0; j < size; j++){
@@ -71,6 +76,11 @@ void reset_board(const int size, char field[][size]){
     draw(size, field); // draw the 2D board
 }
 
+/*
+ * Function: get_position
+ * ----------------------------
+ * Get the values of column and row that entered by the user.
+ */
 int get_position(const char player, char input[]){
     while (1 == 1){
         fgets(input, 10, stdin);
